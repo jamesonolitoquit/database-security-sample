@@ -6,12 +6,15 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+let prisma: PrismaClient | undefined
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+if (process.env.DATABASE_URL) {
+  prisma = globalForPrisma.prisma ?? new PrismaClient()
+  if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+}
 
 const handler = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: prisma ? PrismaAdapter(prisma) : undefined,
   providers: [
     // Add providers here, e.g., Credentials, Google, etc.
     // For demo, use Credentials for simplicity, but securely
