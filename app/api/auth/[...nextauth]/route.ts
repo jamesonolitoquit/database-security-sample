@@ -13,8 +13,14 @@ const getHandler = () => {
     handler = NextAuth({
       adapter: PrismaAdapter(getPrisma()),
       providers: [
-        // Add providers here, e.g., Credentials, Google, etc.
-        // For demo, use Credentials for simplicity, but securely
+        require("next-auth/providers/email")({
+          server: process.env.EMAIL_SERVER,
+          from: process.env.EMAIL_FROM,
+        }),
+        require("next-auth/providers/google")({
+          clientId: process.env.GOOGLE_CLIENT_ID!,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        }),
       ],
       session: {
         strategy: "jwt",

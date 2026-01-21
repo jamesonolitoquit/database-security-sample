@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
+import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 export async function POST(request: Request) {
   const formData = await request.formData();
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   }
 
   // Rename and store file outside web root
-  const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+  const filename = `${Date.now()}-${file.name.replaceAll(/[^a-zA-Z0-9.]/g, '')}`;
   const buffer = Buffer.from(await file.arrayBuffer());
   await writeFile(path.join(process.cwd(), 'uploads', filename), buffer);
 
