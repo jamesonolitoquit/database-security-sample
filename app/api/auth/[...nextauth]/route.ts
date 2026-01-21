@@ -21,10 +21,10 @@ const handler = NextAuth({
       return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.role = token.role
+      if (token && session.user) {
+        session.user.role = token.role;
       }
-      return session
+      return session;
     },
   },
 })
