@@ -24,6 +24,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Only for local development! Remove in production */}
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content="script-src 'self' 'unsafe-inline';"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
