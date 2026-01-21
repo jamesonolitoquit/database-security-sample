@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Database Security Sample
 
-## Getting Started
+A secure high-risk website demo using Next.js, TypeScript, and PostgreSQL to test the Copilot security rulebook.
 
-First, run the development server:
+## Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. **Database**: Register for a managed PostgreSQL database (e.g., Supabase or Vercel Postgres).
+   - Create a new database.
+   - Get the connection string (e.g., `postgresql://user:password@host:port/database`).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Environment Variables**:
+   - Copy `.env` to `.env.local`.
+   - Set `DATABASE_URL` to your database connection string.
+   - Add NextAuth secrets: `NEXTAUTH_SECRET` and `NEXTAUTH_URL`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Migrate Database**:
+   - Run `npx prisma migrate dev --name init` to apply the schema.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. **Generate Prisma Client**:
+   - Run `npx prisma generate`.
 
-## Learn More
+5. **Run the App**:
+   - `npm run dev`
 
-To learn more about Next.js, take a look at the following resources:
+## Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Secure authentication with NextAuth.js
+- File uploads with validation (API: /api/upload)
+- Contact form with server-side validation and anti-spam (API: /api/contact)
+- Security headers via middleware
+- Safe content rendering component
+- Admin dashboard (to be implemented)
+- User-generated content (to be implemented)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Security Notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project follows the Copilot security rulebook for secure development.
