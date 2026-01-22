@@ -1,3 +1,5 @@
+import Notifications from "./components/Notifications";
+
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center gap-8">
@@ -8,6 +10,9 @@ export default function Home() {
       <div className="flex gap-4 mt-6">
         <a href="/quests" className="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-6 rounded shadow">View Quests</a>
         <a href="/leaderboards" className="bg-yellow-400 hover:bg-yellow-500 text-purple-900 font-bold py-2 px-6 rounded shadow">Leaderboards</a>
+      </div>
+      <div className="mt-10 w-full max-w-md">
+        <Notifications />
       </div>
     </div>
   );

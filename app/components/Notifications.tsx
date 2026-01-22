@@ -20,8 +20,18 @@ export default function Notifications() {
     fetch("/api/notifications")
       .then((res) => res.json())
       .then((data) => {
-        setNotifications(data.notifications);
-        setUnreadCount(data.unreadCount);
+        if (Array.isArray(data.notifications)) {
+          setNotifications(data.notifications);
+          setUnreadCount(typeof data.unreadCount === "number" ? data.unreadCount : 0);
+        } else {
+          setNotifications([]);
+          setUnreadCount(0);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setNotifications([]);
+        setUnreadCount(0);
         setLoading(false);
       });
   }, []);
@@ -37,7 +47,7 @@ export default function Notifications() {
   };
 
   if (loading) return <div>Loading notifications...</div>;
-  if (notifications.length === 0) return <div>No notifications.</div>;
+  if (!Array.isArray(notifications) || notifications.length === 0) return <div>No notifications.</div>;
 
   return (
     <div>
