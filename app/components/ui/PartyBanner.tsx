@@ -10,7 +10,7 @@ export const PartyBanner: React.FC<PartyBannerProps> = ({ partyName, members }) 
     <span className="text-xl font-bold text-yellow-200 mr-4">{partyName}</span>
     <div className="flex -space-x-2">
       {members.map((member, idx) => (
-        <span key={member.id || member.name || idx} className="bg-white text-purple-700 rounded-full px-2 py-1 text-xs font-semibold border border-purple-300 shadow">
+        <span key={member || idx} className="bg-white text-purple-700 rounded-full px-2 py-1 text-xs font-semibold border border-purple-300 shadow">
           {member}
         </span>
       ))}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { withRateLimit, contactRateLimit } from '@/lib/rateLimit';
 
-export async function POST(request: Request) {
+async function contactHandler(request: Request) {
   const data = await request.json();
   // Honeypot field (should be empty)
   if (data.hiddenField) return NextResponse.json({ error: 'Spam detected' }, { status: 400 });
@@ -16,3 +17,5 @@ export async function POST(request: Request) {
   // Process message...
   return NextResponse.json({ success: true });
 }
+
+export const POST = withRateLimit(contactHandler, contactRateLimit);

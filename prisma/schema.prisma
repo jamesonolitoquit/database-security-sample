@@ -3,11 +3,10 @@
 
 generator client {
   provider = "prisma-client-js"
-  engineType = "library"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
 model Account {
@@ -41,28 +40,82 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String    @unique
+  password      String?
   emailVerified DateTime?
   image         String?
   role          String    @default("user")
   xp            Int       @default(0)
   level         Int       @default(1)
-  class         String?   // e.g., Mage, Warrior, Rogue
+  gold          Int       @default(100) // Currency for crafting and purchases
+  classId       String?
+  characterClass CharacterClass? @relation(fields: [classId], references: [id])
+  // Base stats
+  strength      Int       @default(10)
+  agility       Int       @default(10)
+  intelligence  Int       @default(10)
+  vitality      Int       @default(10)
+  // Equipment
+  weaponId      String?   @unique
+  armorId       String?   @unique
+  accessoryId   String?   @unique
+  weapon        InventoryItem? @relation("Weapon", fields: [weaponId], references: [id])
+  armor         InventoryItem? @relation("Armor", fields: [armorId], references: [id])
+  accessory     InventoryItem? @relation("Accessory", fields: [accessoryId], references: [id])
   partyId       String?
-  party         Party?    @relation(fields: [partyId], references: [id])
+  party         Party?    @relation("UserParty", fields: [partyId], references: [id])
   inventory     InventoryItem[]
+  craftingMaterials UserCraftingMaterial[]
   quests        QuestProgress[]
   adventureLogs AdventureLog[]
   accounts      Account[]
   sessions      Session[]
   files         File[]
+  ledParties    Party[]   @relation("PartyLeader")
+  // Marketplace relations
+  marketplaceListings  MarketplaceListing[] @relation("SellerListings")
+  marketplacePurchases MarketplaceListing[] @relation("BuyerPurchases")
+  // Social media relations
+  posts     Post[]
+  comments  Comment[]
+  likes     Like[]
+  // Friend/Follow relations
+  sentFriendRequests     FriendRequest[] @relation("FriendRequestSender")
+  receivedFriendRequests FriendRequest[] @relation("FriendRequestReceiver")
+  friendships             Friendship[]    @relation("FriendshipUser")
+  friendRelations         Friendship[]    @relation("FriendshipFriend")
+  following               Follow[]        @relation("FollowFollower")
+  followers               Follow[]        @relation("FollowFollowing")
+  // Notification relations
+  notifications           Notification[]
+  createdAt DateTime @default(now())
+}
+
+model CharacterClass {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  icon        String
+  // Stat bonuses per level
+  strengthBonus    Int @default(0)
+  agilityBonus     Int @default(0)
+  intelligenceBonus Int @default(0)
+  vitalityBonus    Int @default(0)
+  // Special abilities
+  abilities    String   @default("[]") // JSON string array of ability names
+  users       User[]
+  createdAt   DateTime @default(now())
 }
 
 model Party {
-  id        String   @id @default(cuid())
-  name      String
-  members   User[]
-  createdAt DateTime @default(now())
-  quests    QuestProgress[]
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  leaderId    String
+  leader      User     @relation("PartyLeader", fields: [leaderId], references: [id])
+  members     User[]   @relation("UserParty")
+  maxMembers  Int      @default(4)
+  createdAt   DateTime @default(now())
+  quests      QuestProgress[]
 }
 model Quest {
   id          String   @id @default(cuid())
@@ -83,6 +136,8 @@ model QuestProgress {
   party     Party?   @relation(fields: [partyId], references: [id])
   partyId   String?
   updatedAt DateTime @updatedAt
+
+  @@unique([userId, questId])
 }
 model Monster {
   id        String   @id @default(cuid())
@@ -100,7 +155,26 @@ model InventoryItem {
   name      String
   icon      String?
   quantity  Int      @default(1)
+  // Equipment properties
+  slot      String?  // weapon, armor, accessory
+  strength  Int      @default(0)
+  agility   Int      @default(0)
+  intelligence Int   @default(0)
+  vitality  Int      @default(0)
+  // Enhancement system
+  level     Int      @default(1)
+  rarity    String   @default("common") // common, rare, epic, legendary
+  maxLevel  Int      @default(10)
+  equipped  Boolean  @default(false)
   createdAt DateTime @default(now())
+  // Equipment relations
+  equippedByWeapon    User? @relation("Weapon")
+  equippedByArmor     User? @relation("Armor")
+  equippedByAccessory User? @relation("Accessory")
+  // Crafting relations
+  craftedFrom         CraftingRecipe[]
+  // Marketplace relations
+  marketplaceListing  MarketplaceListing?
 }
 model AdventureLog {
   id        String   @id @default(cuid())
@@ -109,6 +183,53 @@ model AdventureLog {
   type      String   // quest, battle, levelup, etc.
   details   String
   createdAt DateTime @default(now())
+}
+
+model CraftingMaterial {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  icon        String
+  description String
+  rarity      String   @default("common")
+  value       Int      @default(1) // Gold value
+  createdAt   DateTime @default(now())
+  // Relations
+  userMaterials UserCraftingMaterial[]
+  recipeMaterials RecipeMaterial[]
+}
+
+model CraftingRecipe {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  resultItemId String  // ID of the item this recipe creates
+  resultRarity String  @default("common")
+  requiredLevel Int    @default(1)
+  goldCost    Int      @default(0)
+  description String
+  createdAt   DateTime @default(now())
+  // Relations
+  materials   RecipeMaterial[]
+  resultItem  InventoryItem @relation(fields: [resultItemId], references: [id])
+}
+
+model RecipeMaterial {
+  id         String   @id @default(cuid())
+  recipeId   String
+  materialId String
+  quantity   Int      @default(1)
+  recipe     CraftingRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  material   CraftingMaterial @relation(fields: [materialId], references: [id])
+  @@unique([recipeId, materialId])
+}
+
+model UserCraftingMaterial {
+  id         String   @id @default(cuid())
+  userId     String
+  materialId String
+  quantity   Int      @default(0)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  material   CraftingMaterial @relation(fields: [materialId], references: [id])
+  @@unique([userId, materialId])
 }
 
 model VerificationToken {
@@ -129,4 +250,106 @@ model File {
   userId       String
   user         User     @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
+}
+
+model MarketplaceListing {
+  id          String   @id @default(cuid())
+  sellerId    String
+  seller      User     @relation("SellerListings", fields: [sellerId], references: [id], onDelete: Cascade)
+  itemId      String   @unique
+  item        InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  price       Int      // Price in gold
+  quantity    Int      @default(1)
+  listedAt    DateTime @default(now())
+  status      String   @default("active") // active, sold, cancelled
+  buyerId     String?
+  buyer       User?    @relation("BuyerPurchases", fields: [buyerId], references: [id])
+  soldAt      DateTime?
+
+  @@index([sellerId])
+  @@index([status])
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  content   String
+  image     String?
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes     Like[]
+  comments  Comment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String
+  postId    String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+}
+
+model FriendRequest {
+  id          String   @id @default(cuid())
+  senderId    String
+  receiverId  String
+  status      String   @default("pending") // pending, accepted, rejected
+  sender      User     @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User     @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([senderId, receiverId])
+}
+
+model Friendship {
+  id        String   @id @default(cuid())
+  userId    String
+  friendId  String
+  user      User     @relation("FriendshipUser", fields: [userId], references: [id], onDelete: Cascade)
+  friend    User     @relation("FriendshipFriend", fields: [friendId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, friendId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  follower    User     @relation("FollowFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("FollowFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String   // friend_request, post_like, post_comment, follow, system
+  title       String
+  message     String
+  data        String?  // JSON string for additional data (postId, userId, etc.)
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
 }

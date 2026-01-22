@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { withRateLimit, uploadRateLimit } from '@/lib/rateLimit';
 
-export async function POST(request: Request) {
+async function uploadHandler(request: Request) {
   const formData = await request.formData();
   const file = formData.get('file') as File;
   if (!file) return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
@@ -20,3 +21,5 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ success: true, filename });
 }
+
+export const POST = withRateLimit(uploadHandler, uploadRateLimit);

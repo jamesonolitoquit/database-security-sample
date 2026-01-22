@@ -12,16 +12,20 @@ interface InventoryProps {
 }
 
 export const Inventory: React.FC<InventoryProps> = ({ items }) => (
-  <div className="bg-white/80 dark:bg-gray-900/80 rounded-lg p-4 shadow-md border border-blue-300 mt-4">
-    <h3 className="text-lg font-bold text-blue-700 mb-2">Inventory</h3>
-    <div className="grid grid-cols-4 gap-2">
-      {items.map((item) => (
-        <div key={item.id} className="flex flex-col items-center bg-blue-100 dark:bg-blue-900 rounded p-2 border border-blue-400">
-          <img src={item.icon} alt={item.name} className="w-8 h-8 mb-1" />
-          <span className="text-xs font-semibold text-blue-800 dark:text-blue-200">{item.name}</span>
-          <span className="text-xs text-gray-600 dark:text-gray-300">x{item.quantity}</span>
-        </div>
-      ))}
-    </div>
+  <div className="bg-purple-900/60 rounded-lg p-4 border border-purple-500 mt-4">
+    <h3 className="text-lg font-bold text-purple-300 mb-4">🎒 Inventory</h3>
+    {items.length === 0 ? (
+      <p className="text-purple-200 text-center py-4">No items yet. Fight monsters to find loot!</p>
+    ) : (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {items.map((item) => (
+          <div key={item.id} className="flex flex-col items-center bg-purple-800/60 rounded-lg p-3 border border-purple-400 hover:bg-purple-700/60 transition-colors">
+            <div className="text-3xl mb-2">{item.icon}</div>
+            <span className="text-sm font-semibold text-purple-200 text-center mb-1">{item.name}</span>
+            <span className="text-xs text-purple-300 bg-purple-900/80 px-2 py-1 rounded">x{item.quantity}</span>
+          </div>
+        ))}
+      </div>
+    )}
   </div>
 );

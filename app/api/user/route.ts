@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { getPrisma } from "../../../src/lib/prisma";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { getPrisma } from "@/lib/prisma";
+import { authOptions } from "@/lib/auth";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -15,6 +15,10 @@ export async function GET() {
       inventory: true,
       quests: { include: { quest: true } },
       adventureLogs: true,
+      weapon: true,
+      armor: true,
+      accessory: true,
+      characterClass: true,
     },
   });
   if (!user) {
