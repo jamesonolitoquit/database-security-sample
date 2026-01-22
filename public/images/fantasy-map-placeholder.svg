@@ -1,0 +1,47 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="parchment" cx="50%" cy="50%" r="80%">
+      <stop offset="0%" stop-color="#f7ecd0"/>
+      <stop offset="100%" stop-color="#e2c98f"/>
+    </radialGradient>
+    <linearGradient id="coast" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#b7d3c6"/>
+      <stop offset="100%" stop-color="#6e8b8e"/>
+    </linearGradient>
+    <radialGradient id="lake" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#b3e0ff"/>
+      <stop offset="100%" stop-color="#3a6fa5"/>
+    </radialGradient>
+  </defs>
+  <!-- Parchment background -->
+  <rect width="1920" height="1080" fill="url(#parchment)"/>
+  <!-- Main continent (hand-drawn style) -->
+  <path d="M400,800 Q600,600 900,700 Q1200,800 1500,600 Q1700,400 1400,300 Q1200,200 900,300 Q600,400 500,600 Q400,800 400,800 Z" fill="url(#coast)" stroke="#6e4c1b" stroke-width="8"/>
+  <!-- Coastline details -->
+  <path d="M420,780 Q610,610 900,690 Q1190,770 1480,610 Q1670,430 1390,320 Q1190,220 900,320 Q610,420 520,610 Q420,780 420,780 Z" fill="none" stroke="#fffbe6" stroke-width="3" opacity="0.7"/>
+  <!-- Lake -->
+  <ellipse cx="1100" cy="600" rx="60" ry="30" fill="url(#lake)" stroke="#5a8ca4" stroke-width="4"/>
+  <!-- River -->
+  <path d="M 900 350 Q 950 500 1100 600" stroke="#7ec8e3" stroke-width="10" fill="none" opacity="0.7"/>
+  <!-- Mountain range -->
+  <g>
+    <polygon points="700,500 730,440 760,500 790,470 820,520 850,480 880,530 910,490 940,540 970,500 1000,550" fill="#b0b0b0" stroke="#888" stroke-width="4"/>
+    <polygon points="1200,500 1230,450 1260,500 1290,470 1320,520 1350,480 1380,530 1410,490 1440,540 1470,500 1500,550" fill="#b0b0b0" stroke="#888" stroke-width="4"/>
+  </g>
+  <!-- Forests -->
+  <ellipse cx="800" cy="700" rx="40" ry="18" fill="#7bb661" stroke="#4e7d36" stroke-width="3"/>
+  <ellipse cx="850" cy="720" rx="30" ry="12" fill="#7bb661" stroke="#4e7d36" stroke-width="3"/>
+  <ellipse cx="1300" cy="650" rx="50" ry="20" fill="#7bb661" stroke="#4e7d36" stroke-width="3"/>
+  <!-- Decorative banners -->
+  <rect x="1600" y="100" width="180" height="40" rx="10" fill="#e2d9b7" stroke="#bfae6a" stroke-width="4"/>
+  <text x="1690" y="130" text-anchor="middle" font-size="32" fill="#bfae6a" font-family="serif">Eldoria</text>
+  <!-- Compass rose -->
+  <g>
+    <circle cx="180" cy="180" r="60" fill="#fffbe6" stroke="#bfae6a" stroke-width="6"/>
+    <polygon points="180,120 190,180 180,240 170,180" fill="#e2d9b7" stroke="#bfae6a" stroke-width="3"/>
+    <polygon points="120,180 180,170 240,180 180,190" fill="#e2d9b7" stroke="#bfae6a" stroke-width="3"/>
+    <text x="180" y="185" text-anchor="middle" font-size="32" fill="#bfae6a" font-family="serif">N</text>
+  </g>
+  <!-- Decorative border -->
+  <rect x="10" y="10" width="1900" height="1060" fill="none" stroke="#bfae6a" stroke-width="12" rx="40"/>
+</svg>

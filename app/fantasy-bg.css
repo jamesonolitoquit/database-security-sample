@@ -1,0 +1,44 @@
+/* Placeholder fantasy map background CSS */
+/* Place this in your global styles (e.g., app/globals.css) */
+
+
+.fantasy-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  background: url('/images/fantasy-map-noon.svg') center center/cover no-repeat;
+  filter: blur(2px) brightness(0.95) saturate(1.1);
+  transition: background 0.7s, filter 0.5s;
+}
+
+.fantasy-bg.morning {
+  background: url('/images/fantasy-map-morning.svg') center center/cover no-repeat;
+  filter: blur(2px) brightness(1.05) saturate(1.15);
+}
+
+.fantasy-bg.noon {
+  background: url('/images/fantasy-map-noon.svg') center center/cover no-repeat;
+  filter: blur(2px) brightness(1) saturate(1.2);
+}
+
+.fantasy-bg.dawn {
+  background: url('/images/fantasy-map-dawn.svg') center center/cover no-repeat;
+  filter: blur(2px) brightness(1.08) saturate(1.18) hue-rotate(-10deg);
+}
+
+.fantasy-bg.night {
+  background: url('/images/fantasy-map-night.svg') center center/cover no-repeat;
+  filter: blur(2px) brightness(0.6) saturate(1.3) hue-rotate(-20deg);
+}
+
+
+
+.fantasy-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.5) 100%);
+  pointer-events: none;
+}

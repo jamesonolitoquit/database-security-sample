@@ -1,0 +1,4 @@
+// Fantasy map placeholder (royalty-free, generated)
+// Download a fantasy map from a generator like https://azgaar.github.io/Fantasy-Map-Generator/ or use a placeholder image.
+// For now, use a placeholder image from Unsplash or similar.
+// Save as public/images/fantasy-map-placeholder.jpg

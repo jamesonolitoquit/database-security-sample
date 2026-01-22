@@ -2,9 +2,15 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { ClientProviders } from "./components/ClientProviders";
+import { ThemeProvider } from "./components/ThemeProvider";
+
+import { DayNightOverlay } from "./components/DayNightOverlay";
 import { UserStatus } from "./components/UserStatus";
 import { NotificationBell } from "./components/notifications/NotificationBell";
-import { GameMenu } from "./components/GameMenu";
+import { FloatingGameMenu } from "./components/FloatingGameMenu";
+
+import { LocalTestPanelClient } from "./components/LocalTestPanelClient";
+import { Suspense } from "react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,21 +32,19 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-gradient-to-br from-purple-900 via-blue-900 to-yellow-100 min-h-screen font-sans text-white">
-        <ClientProviders>
-          <nav className="flex items-center gap-4 py-4 bg-black/60 shadow-lg border-b-2 border-yellow-400">
-            <Link href="/" className="text-2xl font-extrabold text-yellow-300 tracking-wider ml-28">
-              Isekai Gate
-            </Link>
-            <div className="flex-1 flex justify-end items-center gap-4 mr-8">
-              <NotificationBell />
-              <UserStatus />
-            </div>
-          </nav>
-          <div className="flex">
-            <GameMenu />
-            <main className="flex-1 max-w-4xl mx-auto py-8 px-4">{children}</main>
-          </div>
-        </ClientProviders>
+        <ThemeProvider>
+          <ClientProviders>
+            <div id="fantasy-bg-root" className="fantasy-bg" />
+
+            <DayNightOverlay />
+            <FloatingGameMenu />
+            <main className="max-w-4xl mx-auto py-8 px-4 relative z-10">{children}</main>
+            {/* Local test panel only on localhost/dev */}
+            <Suspense fallback={null}>
+              <LocalTestPanelClient />
+            </Suspense>
+          </ClientProviders>
+        </ThemeProvider>
       </body>
     </html>
   );

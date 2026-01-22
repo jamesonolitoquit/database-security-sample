@@ -1,0 +1,15 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="parchment" cx="50%" cy="50%" r="80%">
+      <stop offset="0%" stop-color="#f7ecd0"/>
+      <stop offset="100%" stop-color="#e2c98f"/>
+    </radialGradient>
+    <radialGradient id="dawnSky" cx="50%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#ffe6e6"/>
+      <stop offset="100%" stop-color="#f7cbb3"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#parchment)"/>
+  <rect width="1920" height="1080" fill="url(#dawnSky)" opacity="0.5"/>
+  <!-- ...existing map details from fantasy-map-placeholder.svg... -->
+</svg>
