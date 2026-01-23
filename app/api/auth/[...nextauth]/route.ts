@@ -6,7 +6,7 @@ import NextAuth from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { withRateLimit, authRateLimit } from "@/lib/rateLimit";
 
-const handler = NextAuth(authOptions);
+const handler = NextAuth(authOptions as any);
 
 const rateLimitedHandler = withRateLimit(handler, authRateLimit);
 

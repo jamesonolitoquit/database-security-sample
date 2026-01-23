@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { Session } from "next-auth";
 
 interface AbilityEffect {
   type: 'damage' | 'heal' | 'buff' | 'debuff';
@@ -110,7 +111,7 @@ const ABILITY_DATA: Record<string, { cost: number; effects: AbilityEffect[]; des
 };
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions as any) as Session | null;
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -2,25 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getPrisma } from '@/lib/prisma';
-import { rateLimit } from '@/lib/rateLimit';
+import { withRateLimit, apiRateLimit } from '@/lib/rateLimit';
 import { logUnauthorizedAccess } from '@/lib/logging';
+import { Session } from 'next-auth';
 
-const authorizeAdmin = async (session) => {
+const authorizeAdmin = async (session: Session | null) => {
   if (!session?.user?.email || session.user.role !== 'admin') {
     logUnauthorizedAccess(session);
     throw new Error('Unauthorized: Admin access required');
   }
 };
 
-export async function GET(request: NextRequest) {
+const handler = async (request: NextRequest) => {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as any) as Session | null;
     await authorizeAdmin(session);
 
     const prisma = getPrisma();
-
-    // Rate limiting
-    await rateLimit(request);
 
     // Get system statistics
     const [
@@ -50,6 +48,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ stats });
   } catch (error) {
     console.error('Error fetching admin stats:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Internal server error' }, { status: 500 });
   }
-}
+};
+
+export const GET = withRateLimit(handler, apiRateLimit);

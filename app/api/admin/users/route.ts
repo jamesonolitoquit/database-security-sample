@@ -2,25 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getPrisma } from '@/lib/prisma';
-import { rateLimit } from '@/lib/rateLimit';
+import { withRateLimit, apiRateLimit } from '@/lib/rateLimit';
 import { logUnauthorizedAccess } from '@/lib/logging';
+import { Session } from 'next-auth';
 
-const authorizeAdmin = async (session) => {
+const authorizeAdmin = async (session: Session | null) => {
   if (!session?.user?.email || session.user.role !== 'admin') {
     logUnauthorizedAccess(session);
     throw new Error('Unauthorized: Admin access required');
   }
 };
 
-export async function GET(request: NextRequest) {
+const getHandler = async (request: NextRequest) => {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as any) as Session | null;
     await authorizeAdmin(session);
 
     const prisma = getPrisma();
-
-    // Rate limiting
-    await rateLimit(request);
 
     // Get all users with basic info
     const users = await prisma.user.findMany({
@@ -40,13 +38,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ users });
   } catch (error) {
     console.error('Error fetching users:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Internal server error' }, { status: 500 });
   }
-}
+};
 
-export async function POST(request: NextRequest) {
+const postHandler = async (request: NextRequest) => {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as any) as Session | null;
     await authorizeAdmin(session);
 
     const prisma = getPrisma();
@@ -58,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Prevent admin from modifying themselves
-    if (userId === session.user.id) {
+    if (session?.user && (session.user as any).id && userId === (session.user as any).id) {
       return NextResponse.json({ error: 'Cannot modify your own account' }, { status: 400 });
     }
 
@@ -108,6 +106,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, message: `User ${action} successful` });
   } catch (error) {
     console.error('Error in admin user action:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Internal server error' }, { status: 500 });
   }
-}
+};
+
+export const GET = withRateLimit(getHandler, apiRateLimit);
+export const POST = withRateLimit(postHandler, apiRateLimit);
