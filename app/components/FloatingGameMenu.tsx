@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { usePathname } from "next/navigation";
 
 import { useTheme } from "./ThemeProvider";
-import { useSession } from "next-auth/react";
+import { useLocalSession } from "./useLocalSession";
 import { signOut } from "next-auth/react";
 import {
   Home,
@@ -27,7 +27,7 @@ import {
 
 export const FloatingGameMenu = React.memo(function FloatingGameMenu() {
   const { theme, setTheme } = useTheme();
-  const { data: session } = useSession();
+  const { data: session } = useLocalSession();
   const pathname = usePathname();
 
   const themeIcon = theme === "dark" ? Sun : Moon;

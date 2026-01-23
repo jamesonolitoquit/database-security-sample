@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from "next-auth/react";
+import { useLocalSession } from "../components/useLocalSession";
 import { useRouter } from 'next/navigation';
 
 interface User {
@@ -20,7 +20,7 @@ interface FriendRequest {
 }
 
 export default function FriendsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useLocalSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'following' | 'followers'>('friends');
   const [friends, setFriends] = useState<User[]>([]);
