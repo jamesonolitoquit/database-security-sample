@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { getPrisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { withRateLimit, authRateLimit } from "@/lib/rateLimit";
 
-async function registerHandler(req: Request) {
+async function registerHandler(req: NextRequest) {
   try {
     console.log('Registration API called');
     const { name, email, password } = await req.json();

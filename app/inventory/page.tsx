@@ -16,6 +16,7 @@ interface InventoryItem {
   }
 }
 
+export default function InventoryPage() {
   const { data: session } = useSession()
   const [inventory, setInventory] = useState<InventoryItem[]>([])
   const [userGold, setUserGold] = useState(0)
@@ -92,7 +93,6 @@ interface InventoryItem {
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-white text-center mb-8">Equipment Inventory</h1>
-
         <div className="bg-black/30 backdrop-blur-sm rounded-lg p-6 mb-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-white">Gold: {userGold}</h2>
@@ -101,7 +101,6 @@ interface InventoryItem {
             </div>
           </div>
         </div>
-
         {message && (
           <div className={`mb-6 p-4 rounded-lg text-center ${
             message.includes('enhanced') ? 'bg-green-600' : 'bg-red-600'

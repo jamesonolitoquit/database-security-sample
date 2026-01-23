@@ -34,6 +34,7 @@ interface Recipe {
   }
 }
 
+export default function CraftingPage() {
   const { data: session } = useSession()
   const [materials, setMaterials] = useState<UserCraftingMaterial[]>([])
   const [recipes, setRecipes] = useState<Recipe[]>([])

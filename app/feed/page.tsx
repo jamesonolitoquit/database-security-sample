@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CreatePostForm } from "../components/feed/CreatePostForm";
 import { PostCard } from "../components/feed/PostCard";
 
+export default function FeedPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [posts, setPosts] = useState<any[]>([]);
@@ -101,9 +102,7 @@ import { PostCard } from "../components/feed/PostCard";
   return (
     <div className="max-w-2xl mx-auto py-8">
       <h2 className="text-2xl font-bold text-purple-300 mb-4">Adventurer Feed</h2>
-
       <CreatePostForm onPost={handleCreatePost} submitting={submitting} />
-
       {posts.length === 0 ? (
         <div className="bg-purple-800/40 rounded-lg p-6 border border-purple-400 text-center">
           <span className="text-purple-200">No posts yet. Be the first to share your adventure!</span>
