@@ -2,21 +2,24 @@ import { NextResponse, NextRequest } from "next/server";
 import { getPrisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { withRateLimit, authRateLimit } from "@/lib/rateLimit";
+import { z } from "zod";
+
+const RegisterRequestSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(8),
+});
 
 async function registerHandler(req: NextRequest) {
   try {
-    console.log('Registration API called');
-    const { name, email, password } = await req.json();
-    console.log('Received data:', { name, email, password: password ? '[REDACTED]' : undefined });
+    const data = await req.json();
 
-    if (!name || !email || !password) {
-      console.log('Validation failed: missing fields');
-      return NextResponse.json({ error: "All fields are required." }, { status: 400 });
+    const validation = RegisterRequestSchema.safeParse(data);
+    if (!validation.success) {
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
-    if (password.length < 8) {
-      console.log('Validation failed: password too short');
-      return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
-    }
+
+    const { name, email, password } = validation.data;
 
     console.log('Getting Prisma client');
     const prisma = getPrisma();
@@ -38,9 +41,9 @@ async function registerHandler(req: NextRequest) {
     console.log('User created successfully:', { id: user.id, name: user.name, email: user.email });
 
     return NextResponse.json({ user: { id: user.id, name: user.name, email: user.email } });
-  } catch (err: any) {
-    console.error('Registration error:', err);
-    return NextResponse.json({ error: err?.message || "Server error" }, { status: 500 });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Server error";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 

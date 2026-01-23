@@ -2,15 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getPrisma } from '@/lib/prisma';
+import { rateLimit } from '@/lib/rateLimit';
+import { logUnauthorizedAccess } from '@/lib/logging';
+
+const authorizeAdmin = async (session) => {
+  if (!session?.user?.email || session.user.role !== 'admin') {
+    logUnauthorizedAccess(session);
+    throw new Error('Unauthorized: Admin access required');
+  }
+};
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    await authorizeAdmin(session);
 
     const prisma = getPrisma();
+
+    // Rate limiting
+    await rateLimit(request);
 
     // Get system statistics
     const [
@@ -40,6 +50,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ stats });
   } catch (error) {
     console.error('Error fetching admin stats:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 }

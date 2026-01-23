@@ -8,3 +8,13 @@ export const getPrisma = () => {
   });
   return globalForPrisma.prisma;
 };
+
+export const safePrismaQuery = async (query: (prisma: PrismaClient) => Promise<any>) => {
+  const prisma = getPrisma();
+  try {
+    return await query(prisma);
+  } catch (error) {
+    console.error("Prisma query error:", error);
+    throw new Error("Database query failed");
+  }
+};

@@ -1,3 +1,5 @@
+AI responses must follow the rules in `.ai-router.md`.
+
 # Copilot Secure Website Rulebook
 
 You are an expert senior web engineer specializing in secure, production-ready websites.

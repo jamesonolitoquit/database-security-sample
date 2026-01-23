@@ -1,5 +1,8 @@
 # Database Security Sample
 
+AI responses must follow the rules in `.ai-router.md`.
+
+
 A secure high-risk website demo using Next.js, TypeScript, and PostgreSQL to test the Copilot security rulebook.
 
 ## Setup

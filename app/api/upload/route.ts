@@ -10,16 +10,27 @@ async function uploadHandler(request: NextRequest) {
 
   // Validate file type and size
   const allowedTypes = ['image/png', 'image/jpeg'];
-  if (!allowedTypes.includes(file.type) || file.size > 2 * 1024 * 1024) {
-    return NextResponse.json({ error: 'Invalid file' }, { status: 400 });
+  const maxFileSize = 2 * 1024 * 1024; // 2MB
+
+  if (!allowedTypes.includes(file.type)) {
+    return NextResponse.json({ error: 'Unsupported file type' }, { status: 400 });
   }
 
-  // Rename and store file outside web root
-  const filename = `${Date.now()}-${file.name.replaceAll(/[^a-zA-Z0-9.]/g, '')}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(process.cwd(), 'uploads', filename), buffer);
+  if (file.size > maxFileSize) {
+    return NextResponse.json({ error: 'File size exceeds limit' }, { status: 400 });
+  }
 
-  return NextResponse.json({ success: true, filename });
+  // Rename file to prevent collisions and sanitize name
+  const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.]/g, '');
+  const uniqueFilename = `${Date.now()}-${sanitizedFilename}`;
+
+  // Store file outside web root
+  const uploadDir = path.join(process.cwd(), 'uploads');
+  const filePath = path.join(uploadDir, uniqueFilename);
+
+  await writeFile(filePath, Buffer.from(await file.arrayBuffer()));
+
+  return NextResponse.json({ success: true, filename: uniqueFilename });
 }
 
 export const POST = withRateLimit(uploadHandler, uploadRateLimit);

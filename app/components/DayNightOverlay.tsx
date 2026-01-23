@@ -12,33 +12,36 @@ function getDayPhase(date: Date, lat?: number, lng?: number): "morning" | "noon"
 
 export function DayNightOverlay() {
   const [phase, setPhase] = useState<"morning"|"noon"|"dawn"|"night">("noon");
-  const [geo, setGeo] = useState<{lat:number,lng:number}|null>(null);
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setGeo(null)
-      );
-    }
-  }, []);
 
   useEffect(() => {
     const update = () => {
       const now = new Date();
-      const newPhase = getDayPhase(now, geo?.lat, geo?.lng);
+      const hour = now.getHours();
+      let newPhase: "morning" | "noon" | "dawn" | "night";
+
+      if (hour >= 5 && hour < 8) {
+        newPhase = "morning";
+      } else if (hour >= 8 && hour < 17) {
+        newPhase = "noon";
+      } else if (hour >= 17 && hour < 19) {
+        newPhase = "dawn";
+      } else {
+        newPhase = "night";
+      }
+
       setPhase(newPhase);
-      // Set fantasy-bg class for background
+
       const bg = document.getElementById("fantasy-bg-root");
       if (bg) {
         bg.classList.remove("morning", "noon", "dawn", "night");
         bg.classList.add(newPhase);
       }
     };
+
     update();
-    const interval = setInterval(update, 60 * 1000); // update every minute
+    const interval = setInterval(update, 5 * 60 * 1000); // update every 5 minutes
     return () => clearInterval(interval);
-  }, [geo]);
+  }, []);
 
   // Overlay visuals
   // Overlay visuals for each phase

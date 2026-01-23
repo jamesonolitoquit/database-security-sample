@@ -40,7 +40,7 @@ class RateLimiter {
 }
 
 // Create rate limiter instances
-export const authRateLimit = new RateLimiter(15 * 60 * 1000, 5, 'Too many authentication attempts, please try again later.');
+export const authRateLimit = new RateLimiter(15 * 60 * 1000, 100, 'Too many authentication attempts, please try again later.');
 export const apiRateLimit = new RateLimiter(15 * 60 * 1000, 100, 'Too many requests, please try again later.');
 export const uploadRateLimit = new RateLimiter(60 * 60 * 1000, 10, 'Too many uploads, please try again later.');
 export const contactRateLimit = new RateLimiter(60 * 60 * 1000, 3, 'Too many contact form submissions, please try again later.');

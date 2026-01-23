@@ -1,10 +1,22 @@
-import NextAuth, { Account, Profile, User, SessionStrategy } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { getPrisma } from "./prisma";
+import { getPrisma } from "@/lib/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import EmailProvider from "next-auth/providers/email";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
+import { User as NextAuthUser } from "next-auth";
+
+interface CustomToken {
+  role?: string;
+  email?: string;
+  sub?: string;
+}
+
+interface CustomSessionUser {
+  role?: string;
+  id?: string;
+  email?: string;
+}
 
 export const authOptions = {
   adapter: PrismaAdapter(getPrisma()),
@@ -13,7 +25,7 @@ export const authOptions = {
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -22,7 +34,7 @@ export const authOptions = {
 
         const prisma = getPrisma();
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
+          where: { email: credentials.email },
         });
 
         if (!user || !user.password) {
@@ -39,12 +51,12 @@ export const authOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
-        };
-      }
+        } as NextAuthUser & { role?: string };
+      },
     }),
     EmailProvider({
-      server: process.env.EMAIL_SERVER,
-      from: process.env.EMAIL_FROM,
+      server: process.env.EMAIL_SERVER!,
+      from: process.env.EMAIL_FROM!,
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -52,26 +64,21 @@ export const authOptions = {
     }),
   ],
   session: {
-    strategy: "jwt" as SessionStrategy,
+    strategy: "jwt" as const,
   },
   callbacks: {
-    async signIn({ user, account, profile }: { user: User; account: Account | null; profile?: Profile }) {
-      return true;
-    },
-    async jwt({ token, user }: { token: any; user?: User }) {
+    async jwt({ token, user }: { token: CustomToken; user?: NextAuthUser & { role?: string } }) {
       if (user) {
-        token.role = (user as any).role;
-        token.email = user.email;
+        token.role = user.role || undefined;
+        token.email = user.email || undefined;
       }
       return token;
     },
-    async session({ session, token }: { session: any; token: any }) {
+    async session({ session, token }: { session: { user: CustomSessionUser }; token: CustomToken }) {
       if (token && session.user) {
         session.user.role = token.role;
         session.user.id = token.sub;
-        if (token.email) {
-          session.user.email = token.email;
-        }
+        session.user.email = token.email;
       }
       return session;
     },
