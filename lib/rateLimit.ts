@@ -1,69 +1,92 @@
-import rateLimit from 'express-rate-limit';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-// Rate limiting configurations
-export const authRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
-  message: { error: 'Too many authentication attempts, please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Simple in-memory rate limiter for Next.js
+class RateLimiter {
+  private requests = new Map<string, { count: number; resetTime: number }>();
 
-export const apiRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: { error: 'Too many requests, please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+  constructor(
+    private windowMs: number = 15 * 60 * 1000, // 15 minutes
+    private maxRequests: number = 100,
+    public message: string = 'Too many requests, please try again later.'
+  ) {}
 
-export const uploadRateLimit = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // Limit each IP to 10 uploads per hour
-  message: { error: 'Too many uploads, please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+  check(key: string): { allowed: boolean; remaining: number; resetTime: number } {
+    const now = Date.now();
+    const record = this.requests.get(key);
 
-export const contactRateLimit = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // Limit each IP to 3 contact form submissions per hour
-  message: { error: 'Too many contact form submissions, please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Helper function to apply rate limiting to Next.js API routes
-export function withRateLimit(handler: Function, limiter: any) {
-  return async (request: NextRequest, context?: any) => {
-    // Convert NextRequest to Express-like request for rate limiting
-    const req = {
-      ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
-      headers: Object.fromEntries(request.headers.entries()),
-      method: request.method,
-      url: request.url,
-    };
-
-    // Check rate limit
-    const result = await new Promise((resolve, reject) => {
-      limiter(req as any, {} as any, (result: any) => {
-        if (result && result.error) {
-          resolve(result);
-        } else {
-          resolve(null);
-        }
-      });
-    });
-
-    if (result) {
-      return new Response(JSON.stringify(result), {
-        status: 429,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    if (!record || now > record.resetTime) {
+      // First request or window expired
+      this.requests.set(key, { count: 1, resetTime: now + this.windowMs });
+      return { allowed: true, remaining: this.maxRequests - 1, resetTime: now + this.windowMs };
     }
 
-    // Proceed with the handler
-    return handler(request, context);
+    if (record.count >= this.maxRequests) {
+      return { allowed: false, remaining: 0, resetTime: record.resetTime };
+    }
+
+    record.count++;
+    return { allowed: true, remaining: this.maxRequests - record.count, resetTime: record.resetTime };
+  }
+
+  // Clean up old entries periodically
+  cleanup() {
+    const now = Date.now();
+    for (const [key, record] of this.requests.entries()) {
+      if (now > record.resetTime) {
+        this.requests.delete(key);
+      }
+    }
+  }
+}
+
+// Create rate limiter instances
+export const authRateLimit = new RateLimiter(15 * 60 * 1000, 5, 'Too many authentication attempts, please try again later.');
+export const apiRateLimit = new RateLimiter(15 * 60 * 1000, 100, 'Too many requests, please try again later.');
+export const uploadRateLimit = new RateLimiter(60 * 60 * 1000, 10, 'Too many uploads, please try again later.');
+export const contactRateLimit = new RateLimiter(60 * 60 * 1000, 3, 'Too many contact form submissions, please try again later.');
+
+// Helper function to apply rate limiting to Next.js API routes
+export function withRateLimit(handler: Function, limiter: RateLimiter) {
+  return async (request: NextRequest, context?: any) => {
+    // Get client IP
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+               request.headers.get('x-real-ip') ||
+               request.headers.get('cf-connecting-ip') ||
+               'unknown';
+
+    // Check rate limit
+    const result = limiter.check(ip);
+
+    if (!result.allowed) {
+      return NextResponse.json(
+        { error: limiter.message },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((result.resetTime - Date.now()) / 1000).toString(),
+            'X-RateLimit-Remaining': result.remaining.toString(),
+            'X-RateLimit-Reset': result.resetTime.toString(),
+          },
+        }
+      );
+    }
+
+    // Add rate limit headers to successful response
+    const response = await handler(request, context);
+
+    if (response instanceof NextResponse) {
+      response.headers.set('X-RateLimit-Remaining', result.remaining.toString());
+      response.headers.set('X-RateLimit-Reset', result.resetTime.toString());
+    }
+
+    return response;
   };
 }
+
+// Periodic cleanup (run this in a cron job or similar)
+setInterval(() => {
+  authRateLimit.cleanup();
+  apiRateLimit.cleanup();
+  uploadRateLimit.cleanup();
+  contactRateLimit.cleanup();
+}, 60 * 1000); // Clean up every minute
