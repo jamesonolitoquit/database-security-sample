@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from "next-auth/react"
 
 interface InventoryItem {
   id: string
@@ -16,7 +16,6 @@ interface InventoryItem {
   }
 }
 
-export default function InventoryPage() {
   const { data: session } = useSession()
   const [inventory, setInventory] = useState<InventoryItem[]>([])
   const [userGold, setUserGold] = useState(0)

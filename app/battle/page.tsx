@@ -23,6 +23,8 @@ export default function BattlePage() {
       return;
     }
 
+
+
     fetchMonsters();
     fetchUserData();
   }, [session, status, router]);

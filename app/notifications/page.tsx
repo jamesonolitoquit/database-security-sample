@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useLocalSession } from '../components/useLocalSession';
 import { Bell, Check, CheckCheck } from 'lucide-react';
 
 interface Notification {
@@ -17,7 +17,7 @@ interface Notification {
 }
 
 export default function NotificationsPage() {
-  const { status } = useSession();
+  const { status } = useLocalSession();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);

@@ -55,6 +55,35 @@ export default function ProfilePage() {
   };
 
   const fetchCharacterClasses = () => {
+    // For local test sessions, use fake data
+    if (session?.user?.email?.endsWith("@local.test")) {
+      setCharacterClasses([
+        {
+          id: "warrior",
+          name: "Warrior",
+          description: "A strong fighter with high defense.",
+          icon: "⚔️",
+          strengthBonus: 5,
+          agilityBonus: 0,
+          intelligenceBonus: 0,
+          vitalityBonus: 3,
+          abilities: "Charge, Shield Bash",
+        },
+        {
+          id: "mage",
+          name: "Mage",
+          description: "A wise spellcaster with powerful magic.",
+          icon: "🔮",
+          strengthBonus: 0,
+          agilityBonus: 1,
+          intelligenceBonus: 5,
+          vitalityBonus: 0,
+          abilities: "Fireball, Teleport",
+        },
+      ]);
+      return;
+    }
+
     fetch("/api/classes").then(async (res) => {
       if (res.ok) {
         const data = await res.json();
@@ -66,6 +95,13 @@ export default function ProfilePage() {
   };
 
   const handleSelectClass = async (classId: string) => {
+    // For local test sessions, simulate selection without API call
+    if (session?.user?.email?.endsWith("@local.test")) {
+      setUser({ ...user, classId });
+      setShowClassSelection(false);
+      return;
+    }
+
     setSelectingClass(true);
     try {
       const res = await fetch("/api/user/select-class", {
@@ -89,11 +125,17 @@ export default function ProfilePage() {
   };
 
   const handleEquip = (itemId: string, action: 'equip' | 'unequip') => {
+    // For local test sessions, skip API call
+    if (session?.user?.email?.endsWith("@local.test")) {
+      return;
+    }
     fetchUser();
   };
 
   if (loading) return <div className="text-blue-200">Loading profile...</div>;
-  if (!user) return <div className="text-red-400">Could not load profile.</div>;
+  if (!user) {
+    return <div className="text-red-400">Could not load profile.</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">

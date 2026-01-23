@@ -1,16 +1,15 @@
-import { getServerSession } from "next-auth";
+import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/prisma";
-import { authOptions } from "@/lib/auth";
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+export async function GET(req: Request) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  if (!token?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const prisma = getPrisma();
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: token.email },
     include: {
       inventory: true,
       quests: { include: { quest: true } },

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSession } from 'next-auth/react';
+import { useLocalSession } from '../useLocalSession';
 import { Bell } from 'lucide-react';
 
 interface Notification {
@@ -17,7 +17,7 @@ interface Notification {
 }
 
 export function NotificationBell() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useLocalSession();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from "next-auth/react"
 
 interface CraftingMaterial {
   id: string
@@ -34,7 +34,6 @@ interface Recipe {
   }
 }
 
-export default function CraftingPage() {
   const { data: session } = useSession()
   const [materials, setMaterials] = useState<UserCraftingMaterial[]>([])
   const [recipes, setRecipes] = useState<Recipe[]>([])

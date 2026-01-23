@@ -7,8 +7,10 @@ import { useState } from "react";
 export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [mode, setMode] = useState<"login" | "register">("login");
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +34,31 @@ export default function AuthPage() {
     }
   };
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading("register");
+    setError("");
+
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error || "Registration failed");
+      } else {
+        // Redirect to login after successful registration
+        window.location.href = "/auth";
+      }
+    } catch (error: any) {
+      setError(error?.message || "Registration failed");
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const handleProviderSignIn = async (provider: string) => {
     setLoading(provider);
     try {
@@ -45,9 +72,28 @@ export default function AuthPage() {
 
   return (
     <div className="max-w-md mx-auto bg-white/80 dark:bg-gray-900/80 rounded-lg p-8 shadow-md border border-purple-300 mt-12">
-      <h2 className="text-2xl font-bold text-purple-700 mb-4 text-center">Sign In to Isekai Gate</h2>
+      <h2 className="text-2xl font-bold text-purple-700 mb-4 text-center">
+        {mode === "login" ? "Sign In to Isekai Gate" : "Create Your Account"}
+      </h2>
 
-      <form onSubmit={handleEmailSignIn} className="space-y-4">
+      <form onSubmit={mode === "login" ? handleEmailSignIn : handleRegister} className="space-y-4">
+        {mode === "register" && (
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              placeholder="Enter your name"
+            />
+          </div>
+        )}
+
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Email
@@ -84,10 +130,10 @@ export default function AuthPage() {
 
         <button
           type="submit"
-          disabled={loading === "credentials"}
+          disabled={loading === "credentials" || loading === "register"}
           className="w-full bg-purple-700 hover:bg-purple-800 disabled:bg-purple-500 text-white font-bold py-2 px-6 rounded shadow transition-colors"
         >
-          {loading === "credentials" ? "Signing in..." : "Sign in with Email"}
+          {loading === "credentials" ? "Signing in..." : loading === "register" ? "Registering..." : mode === "login" ? "Sign in with Email" : "Register"}
         </button>
       </form>
 
@@ -112,14 +158,16 @@ export default function AuthPage() {
         </div>
       </div>
 
-      <p className="text-xs text-gray-600 dark:text-gray-300 mt-6 text-center">
-        Don't have an account?{" "}
-        <Link href="/auth/register" className="text-purple-600 hover:text-purple-800 underline">
-          Register here
-        </Link>
-      </p>
+      <div className="mt-6 text-center">
+        <button
+          onClick={() => setMode(mode === "login" ? "register" : "login")}
+          className="text-purple-600 hover:text-purple-800 underline text-sm"
+        >
+          {mode === "login" ? "Don't have an account? Register here" : "Already have an account? Sign in"}
+        </button>
+      </div>
 
-      <p className="text-xs text-gray-600 dark:text-gray-300 mt-2 text-center">
+      <p className="text-xs text-gray-600 dark:text-gray-300 mt-6 text-center">
         By signing in, you agree to our{" "}
         <Link href="/terms" className="underline">Terms of Service</Link> and{" "}
         <Link href="/privacy" className="underline">Privacy Policy</Link>.

@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useMemo } from "react";
 
 function getAutoTheme(): "light" | "dark" {
   const hour = new Date().getHours();
@@ -9,22 +9,30 @@ function getAutoTheme(): "light" | "dark" {
 
 const ThemeContext = createContext({
   theme: "light",
-  setTheme: (theme: "light" | "dark") => {},
+  setTheme: (theme: "light" | "dark" | null) => {},
 });
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   // null = auto, "light"/"dark" = user override
-  const [userTheme, setUserTheme] = useState<"light"|"dark"|null>(null);
-  const [theme, setThemeState] = useState<"light"|"dark">(getAutoTheme());
-
-  // On mount, check for user preference
-  useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    if (stored === "dark" || stored === "light") {
-      setUserTheme(stored);
-      setThemeState(stored);
+  // Read initial theme from localStorage synchronously to avoid flash
+  const getInitialTheme = () => {
+    if (typeof globalThis.window !== "undefined") {
+      const stored = globalThis.window.localStorage.getItem("theme");
+      if (stored === "dark" || stored === "light") {
+        return stored;
+      }
     }
-  }, []);
+    return null;
+  };
+  const [userTheme, setUserTheme] = useState<"light"|"dark"|null>(getInitialTheme);
+  const [theme, setThemeState] = useState<"light"|"dark">(userTheme || getAutoTheme());
+
+  // On mount, apply theme immediately
+  useEffect(() => {
+    if (userTheme) {
+      setThemeState(userTheme);
+    }
+  }, [userTheme]);
 
   // Auto-update theme based on time if no user override
   useEffect(() => {
@@ -54,7 +62,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={useMemo(() => ({ theme, setTheme }), [theme, setTheme])}>
       {children}
     </ThemeContext.Provider>
   );

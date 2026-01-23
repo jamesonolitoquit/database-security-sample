@@ -25,6 +25,37 @@ async function main() {
     }
   })
 
+  // Delete demo account if it exists
+  await prisma.user.deleteMany({ where: { email: 'demo@demo.test' } });
+
+  // Create or update demo account for automatic login
+  const demoAccount = await prisma.user.upsert({
+    where: { email: 'demo@demo.test' },
+    update: {
+      password: '$2b$10$8Q79hgARjjqyZySkz4I9nuKCXYinG2exTiZAI0rmrrV5EDt9WspSu', // password: "demopassword"
+      name: 'Demo Account',
+      level: 3,
+      xp: 500,
+      gold: 200,
+      strength: 8,
+      agility: 8,
+      intelligence: 8,
+      vitality: 8,
+    },
+    create: {
+      email: 'demo@demo.test',
+      name: 'Demo Account',
+      password: '$2b$10$8Q79hgARjjqyZySkz4I9nuKCXYinG2exTiZAI0rmrrV5EDt9WspSu', // password: "demopassword"
+      level: 3,
+      xp: 500,
+      gold: 200,
+      strength: 8,
+      agility: 8,
+      intelligence: 8,
+      vitality: 8,
+    }
+  })
+
   // Create sample quests
   const quests = [
     {

@@ -1,11 +1,12 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useLocalSession } from "./useLocalSession";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { memo } from "react";
 
 function UserStatusComponent() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useLocalSession();
 
   // Remove the automatic update call that was causing infinite re-renders
   // The session will update automatically when authentication state changes

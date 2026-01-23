@@ -39,6 +39,8 @@ export default function PartyPage() {
       return;
     }
 
+
+
     loadPartyData();
   }, [session, status, router]);
 

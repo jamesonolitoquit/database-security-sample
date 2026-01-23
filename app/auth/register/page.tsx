@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,6 +37,8 @@ export default function RegisterPage() {
         setError(data?.error || "Registration failed");
       } else {
         setSuccess(true);
+        // Redirect to login page after successful registration
+        setTimeout(() => router.push("/auth"), 2000);
       }
     } catch (e: any) {
       setError(e?.message || "Unknown error");
@@ -53,7 +57,7 @@ export default function RegisterPage() {
           {loading ? "Registering..." : "Register"}
         </button>
         {error && <div className="text-red-500 text-sm">{error}</div>}
-        {success && <div className="text-green-600 text-sm">Registration successful! You can now log in.</div>}
+        {success && <div className="text-green-600 text-sm">Registration successful! Redirecting to login...</div>}
       </form>
     </div>
   );

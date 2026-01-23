@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { CreatePostForm } from "../components/feed/CreatePostForm";
 import { PostCard } from "../components/feed/PostCard";
 
-export default function FeedPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [posts, setPosts] = useState<any[]>([]);
